@@ -1,0 +1,1298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>8D Audio Studio — Professional Spatial Audio Converter</title>
+  <meta name="description" content="Convert any song into immersive 8D / 9D spatial audio. 100% private, client-side processing. Best with headphones." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0a0b0f;
+      --bg-card: #12141c;
+      --bg-elevated: #1a1d28;
+      --border: rgba(255, 255, 255, 0.08);
+      --text: #f0f2f8;
+      --text-muted: #8b92a8;
+      --accent: #7c5cfc;
+      --accent-2: #00d4aa;
+      --accent-glow: rgba(124, 92, 252, 0.35);
+      --danger: #ff5c7a;
+      --success: #00d4aa;
+      --radius: 16px;
+      --radius-sm: 10px;
+      --shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+      --font: 'Inter', system-ui, sans-serif;
+      --font-display: 'Space Grotesk', system-ui, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.5;
+      overflow-x: hidden;
+    }
+
+    /* Background effects */
+    .bg-glow {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      background:
+        radial-gradient(ellipse 80% 50% at 20% -10%, rgba(124, 92, 252, 0.18), transparent 50%),
+        radial-gradient(ellipse 60% 40% at 90% 10%, rgba(0, 212, 170, 0.12), transparent 45%),
+        radial-gradient(ellipse 50% 30% at 50% 100%, rgba(124, 92, 252, 0.08), transparent 40%);
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 32px 20px 80px;
+    }
+
+    /* Header */
+    header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .logo-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--accent), #a78bfa);
+      display: grid;
+      place-items: center;
+      font-size: 24px;
+      box-shadow: 0 8px 24px var(--accent-glow);
+    }
+
+    h1 {
+      font-family: var(--font-display);
+      font-size: clamp(1.8rem, 4vw, 2.4rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      background: linear-gradient(135deg, #fff 30%, #c4b5fd);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .tagline {
+      color: var(--text-muted);
+      font-size: 1.05rem;
+      max-width: 480px;
+      margin: 8px auto 0;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 16px;
+      padding: 6px 14px;
+      background: rgba(0, 212, 170, 0.12);
+      border: 1px solid rgba(0, 212, 170, 0.25);
+      border-radius: 999px;
+      font-size: 0.8rem;
+      color: var(--accent-2);
+      font-weight: 500;
+    }
+
+    /* Main card */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    /* Drop zone */
+    .drop-zone {
+      padding: 48px 24px;
+      text-align: center;
+      border: 2px dashed rgba(255, 255, 255, 0.12);
+      border-radius: var(--radius);
+      margin: 20px;
+      transition: all 0.25s ease;
+      cursor: pointer;
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .drop-zone:hover,
+    .drop-zone.dragover {
+      border-color: var(--accent);
+      background: rgba(124, 92, 252, 0.08);
+      transform: scale(1.01);
+    }
+
+    .drop-zone.has-file {
+      border-style: solid;
+      border-color: rgba(0, 212, 170, 0.3);
+      background: rgba(0, 212, 170, 0.05);
+      padding: 28px 24px;
+    }
+
+    .drop-icon {
+      font-size: 42px;
+      margin-bottom: 12px;
+      opacity: 0.9;
+    }
+
+    .drop-title {
+      font-weight: 600;
+      font-size: 1.15rem;
+      margin-bottom: 6px;
+    }
+
+    .drop-sub {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    .file-info {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .drop-zone.has-file .file-info {
+      display: flex;
+    }
+
+    .drop-zone.has-file .drop-placeholder {
+      display: none;
+    }
+
+    .file-name {
+      font-weight: 600;
+      font-size: 1.05rem;
+      max-width: 280px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .file-meta {
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+
+    .btn-change {
+      padding: 8px 16px;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-change:hover {
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    /* Controls section */
+    .controls {
+      padding: 8px 24px 28px;
+      display: none;
+    }
+
+    .controls.visible {
+      display: block;
+    }
+
+    .section-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+
+    /* Presets */
+    .presets {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 10px;
+      margin-bottom: 28px;
+    }
+
+    .preset-btn {
+      padding: 14px 12px;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+    }
+
+    .preset-btn:hover {
+      border-color: rgba(124, 92, 252, 0.5);
+      background: rgba(124, 92, 252, 0.1);
+    }
+
+    .preset-btn.active {
+      border-color: var(--accent);
+      background: rgba(124, 92, 252, 0.18);
+      box-shadow: 0 0 0 1px var(--accent);
+      color: #c4b5fd;
+    }
+
+    .preset-btn span {
+      display: block;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+      font-weight: 400;
+    }
+
+    /* Sliders */
+    .sliders {
+      display: grid;
+      gap: 20px;
+      margin-bottom: 28px;
+    }
+
+    .slider-row {
+      display: grid;
+      grid-template-columns: 110px 1fr 52px;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .slider-label {
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--text-muted);
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 6px;
+      background: var(--bg-elevated);
+      border-radius: 999px;
+      outline: none;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), #a78bfa);
+      cursor: pointer;
+      box-shadow: 0 2px 8px var(--accent-glow);
+      border: 2px solid #fff;
+    }
+
+    input[type="range"]::-moz-range-thumb {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), #a78bfa);
+      cursor: pointer;
+      border: 2px solid #fff;
+    }
+
+    .slider-value {
+      font-size: 0.85rem;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+      text-align: right;
+      color: var(--accent);
+    }
+
+    /* Visualizer */
+    .visualizer-wrap {
+      margin-bottom: 28px;
+      background: var(--bg-elevated);
+      border-radius: var(--radius-sm);
+      padding: 20px;
+      border: 1px solid var(--border);
+    }
+
+    .visualizer-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .pan-indicator {
+      position: relative;
+      height: 48px;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 24px;
+      overflow: hidden;
+    }
+
+    .pan-track {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      font-size: 0.7rem;
+      color: rgba(255, 255, 255, 0.3);
+      pointer-events: none;
+    }
+
+    .pan-dot {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 22px;
+      height: 22px;
+      margin: -11px 0 0 -11px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      box-shadow: 0 0 16px var(--accent-glow);
+      transition: left 0.05s linear;
+      z-index: 2;
+    }
+
+    .pan-dot::after {
+      content: '';
+      position: absolute;
+      inset: -6px;
+      border-radius: 50%;
+      border: 2px solid rgba(124, 92, 252, 0.4);
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 0.6; }
+      50% { transform: scale(1.3); opacity: 0; }
+    }
+
+    /* Player controls */
+    .player {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 14px 24px;
+      border: none;
+      border-radius: 12px;
+      font-family: var(--font);
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), #6d4ef2);
+      color: #fff;
+      box-shadow: 0 8px 24px var(--accent-glow);
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 12px 28px var(--accent-glow);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .btn-secondary {
+      background: var(--bg-elevated);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .btn-success {
+      background: linear-gradient(135deg, #00b894, #00d4aa);
+      color: #0a0b0f;
+      box-shadow: 0 8px 24px rgba(0, 212, 170, 0.3);
+    }
+
+    .btn-success:hover:not(:disabled) {
+      transform: translateY(-1px);
+    }
+
+    .btn-success:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .time-display {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      font-variant-numeric: tabular-nums;
+      min-width: 90px;
+    }
+
+    .progress-bar {
+      flex: 1;
+      min-width: 120px;
+      height: 6px;
+      background: var(--bg-elevated);
+      border-radius: 999px;
+      overflow: hidden;
+      cursor: pointer;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      border-radius: 999px;
+      transition: width 0.1s linear;
+    }
+
+    /* Status / tips */
+    .status {
+      padding: 14px 18px;
+      background: rgba(124, 92, 252, 0.1);
+      border: 1px solid rgba(124, 92, 252, 0.2);
+      border-radius: var(--radius-sm);
+      font-size: 0.9rem;
+      color: #c4b5fd;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .status.hidden {
+      display: none;
+    }
+
+    .tip {
+      text-align: center;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      padding: 0 20px 24px;
+    }
+
+    .tip strong {
+      color: var(--accent-2);
+    }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      margin-top: 40px;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+
+    footer a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    /* Processing overlay */
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(10, 11, 15, 0.85);
+      backdrop-filter: blur(8px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .overlay.visible {
+      display: flex;
+    }
+
+    .spinner {
+      width: 48px;
+      height: 48px;
+      border: 3px solid rgba(124, 92, 252, 0.2);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .overlay-text {
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      .slider-row {
+        grid-template-columns: 1fr;
+        gap: 8px;
+      }
+
+      .slider-value {
+        text-align: left;
+      }
+
+      .player {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .btn {
+        width: 100%;
+      }
+
+      .time-display {
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-glow"></div>
+
+  <div class="container">
+    <header>
+      <div class="logo">
+        <div class="logo-icon">🎧</div>
+        <h1>8D Audio Studio</h1>
+      </div>
+      <p class="tagline">Turn any song into immersive spatial audio that moves around your head. Professional quality, 100% private.</p>
+      <div class="badge">🔒 Files never leave your device</div>
+    </header>
+
+    <div class="card">
+      <!-- Drop zone -->
+      <div class="drop-zone" id="dropZone">
+        <div class="drop-placeholder">
+          <div class="drop-icon">🎵</div>
+          <div class="drop-title">Drop your song here</div>
+          <div class="drop-sub">or click to browse · MP3, WAV, FLAC, M4A, OGG</div>
+        </div>
+        <div class="file-info">
+          <div>
+            <div class="file-name" id="fileName">—</div>
+            <div class="file-meta" id="fileMeta">—</div>
+          </div>
+          <button class="btn-change" id="changeFileBtn" type="button">Change file</button>
+        </div>
+        <input type="file" id="fileInput" accept="audio/*,.mp3,.wav,.flac,.m4a,.ogg,.aac" hidden />
+      </div>
+
+      <!-- Controls (shown after file load) -->
+      <div class="controls" id="controls">
+        <div class="status" id="statusMsg">
+          <span>🎧</span>
+          <span>Put on headphones for the full 8D / 9D effect. Speakers won’t show the movement.</span>
+        </div>
+
+        <div class="section-label">Presets</div>
+        <div class="presets" id="presets">
+          <button class="preset-btn active" data-preset="classic" type="button">
+            Classic 8D
+            <span>~8s orbit</span>
+          </button>
+          <button class="preset-btn" data-preset="dreamy" type="button">
+            Slow & Dreamy
+            <span>~12s orbit</span>
+          </button>
+          <button class="preset-btn" data-preset="intense" type="button">
+            Intense
+            <span>~5s orbit</span>
+          </button>
+          <button class="preset-btn" data-preset="nineD" type="button">
+            9D Enhanced
+            <span>Wider + reverb</span>
+          </button>
+          <button class="preset-btn" data-preset="cosmic" type="button">
+            Cosmic
+            <span>Deep space</span>
+          </button>
+        </div>
+
+        <div class="section-label">Fine Tune</div>
+        <div class="sliders">
+          <div class="slider-row">
+            <label class="slider-label" for="speed">Rotation</label>
+            <input type="range" id="speed" min="0.05" max="0.6" step="0.01" value="0.125" />
+            <span class="slider-value" id="speedVal">0.13 Hz</span>
+          </div>
+          <div class="slider-row">
+            <label class="slider-label" for="depth">Depth</label>
+            <input type="range" id="depth" min="0.2" max="1" step="0.05" value="0.95" />
+            <span class="slider-value" id="depthVal">95%</span>
+          </div>
+          <div class="slider-row">
+            <label class="slider-label" for="reverb">Reverb</label>
+            <input type="range" id="reverb" min="0" max="0.7" step="0.05" value="0.25" />
+            <span class="slider-value" id="reverbVal">25%</span>
+          </div>
+          <div class="slider-row">
+            <label class="slider-label" for="bass">Bass Boost</label>
+            <input type="range" id="bass" min="0" max="12" step="1" value="3" />
+            <span class="slider-value" id="bassVal">+3 dB</span>
+          </div>
+        </div>
+
+        <div class="visualizer-wrap">
+          <div class="visualizer-label">
+            <span>Spatial movement</span>
+            <span id="panText">Center</span>
+          </div>
+          <div class="pan-indicator">
+            <div class="pan-track">
+              <span>L</span>
+              <span>R</span>
+            </div>
+            <div class="pan-dot" id="panDot"></div>
+          </div>
+        </div>
+
+        <div class="player">
+          <button class="btn btn-primary" id="playBtn" type="button">
+            <span id="playIcon">▶</span>
+            <span id="playText">Play Preview</span>
+          </button>
+          <button class="btn btn-secondary" id="abBtn" type="button" title="Compare original vs 8D">
+            A/B Original
+          </button>
+          <div class="progress-bar" id="progressBar">
+            <div class="progress-fill" id="progressFill"></div>
+          </div>
+          <div class="time-display" id="timeDisplay">0:00 / 0:00</div>
+        </div>
+
+        <button class="btn btn-success" id="downloadBtn" type="button" style="width: 100%;" disabled>
+          ↓ Download 8D Audio (WAV)
+        </button>
+      </div>
+
+      <p class="tip">
+        Best results with <strong>headphones or earbuds</strong>. Processing happens entirely in your browser — nothing is uploaded.
+      </p>
+    </div>
+
+    <footer>
+      <p>8D Audio Studio · Client-side spatial audio · Free & private</p>
+    </footer>
+  </div>
+
+  <!-- Processing overlay -->
+  <div class="overlay" id="overlay">
+    <div class="spinner"></div>
+    <div class="overlay-text" id="overlayText">Processing audio…</div>
+  </div>
+
+  <script>
+    // ========== State ==========
+    let audioContext = null;
+    let originalBuffer = null;
+    let sourceNode = null;
+    let pannerNode = null;
+    let bassFilter = null;
+    let dryGain = null;
+    let wetGain = null;
+    let delay1 = null;
+    let delay2 = null;
+    let feedback1 = null;
+    let feedback2 = null;
+    let isPlaying = false;
+    let isOriginalMode = false;
+    let startTime = 0;
+    let pauseOffset = 0;
+    let animFrame = null;
+    let fileDuration = 0;
+
+    // DOM
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+    const changeFileBtn = document.getElementById('changeFileBtn');
+    const fileName = document.getElementById('fileName');
+    const fileMeta = document.getElementById('fileMeta');
+    const controls = document.getElementById('controls');
+    const playBtn = document.getElementById('playBtn');
+    const playIcon = document.getElementById('playIcon');
+    const playText = document.getElementById('playText');
+    const abBtn = document.getElementById('abBtn');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const progressBar = document.getElementById('progressBar');
+    const progressFill = document.getElementById('progressFill');
+    const timeDisplay = document.getElementById('timeDisplay');
+    const panDot = document.getElementById('panDot');
+    const panText = document.getElementById('panText');
+    const overlay = document.getElementById('overlay');
+    const overlayText = document.getElementById('overlayText');
+
+    const speedSlider = document.getElementById('speed');
+    const depthSlider = document.getElementById('depth');
+    const reverbSlider = document.getElementById('reverb');
+    const bassSlider = document.getElementById('bass');
+    const speedVal = document.getElementById('speedVal');
+    const depthVal = document.getElementById('depthVal');
+    const reverbVal = document.getElementById('reverbVal');
+    const bassVal = document.getElementById('bassVal');
+
+    // Presets
+    const presets = {
+      classic: { speed: 0.125, depth: 0.95, reverb: 0.25, bass: 3 },
+      dreamy:  { speed: 0.08,  depth: 0.85, reverb: 0.4,  bass: 2 },
+      intense: { speed: 0.2,   depth: 1.0,  reverb: 0.2,  bass: 4 },
+      nineD:   { speed: 0.11,  depth: 1.0,  reverb: 0.45, bass: 5 },
+      cosmic:  { speed: 0.07,  depth: 0.9,  reverb: 0.55, bass: 4 }
+    };
+
+    // ========== Init Audio Context ==========
+    function ensureAudioContext() {
+      if (!audioContext) {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioContext.state === 'suspended') {
+        audioContext.resume();
+      }
+      return audioContext;
+    }
+
+    // ========== File handling ==========
+    dropZone.addEventListener('click', (e) => {
+      if (e.target === changeFileBtn) return;
+      fileInput.click();
+    });
+
+    changeFileBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      fileInput.click();
+    });
+
+    dropZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropZone.classList.add('dragover');
+    });
+
+    dropZone.addEventListener('dragleave', () => {
+      dropZone.classList.remove('dragover');
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('dragover');
+      if (e.dataTransfer.files.length) {
+        handleFile(e.dataTransfer.files[0]);
+      }
+    });
+
+    fileInput.addEventListener('change', () => {
+      if (fileInput.files.length) {
+        handleFile(fileInput.files[0]);
+      }
+    });
+
+    async function handleFile(file) {
+      if (!file.type.startsWith('audio/') && !/\.(mp3|wav|flac|m4a|ogg|aac)$/i.test(file.name)) {
+        alert('Please select a valid audio file (MP3, WAV, FLAC, M4A, OGG, AAC).');
+        return;
+      }
+
+      stopPlayback();
+      showOverlay('Loading audio…');
+
+      try {
+        const ctx = ensureAudioContext();
+        const arrayBuffer = await file.arrayBuffer();
+        originalBuffer = await ctx.decodeAudioData(arrayBuffer);
+        fileDuration = originalBuffer.duration;
+
+        fileName.textContent = file.name;
+        fileMeta.textContent = formatDuration(fileDuration) + ' · ' + formatSize(file.size);
+        dropZone.classList.add('has-file');
+        controls.classList.add('visible');
+        downloadBtn.disabled = false;
+
+        // Apply classic preset by default
+        applyPreset('classic');
+        updateSliderLabels();
+      } catch (err) {
+        console.error(err);
+        alert('Could not decode this audio file. Try another format (WAV or MP3 works best).');
+      } finally {
+        hideOverlay();
+      }
+    }
+
+    // ========== Presets ==========
+    document.querySelectorAll('.preset-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        applyPreset(btn.dataset.preset);
+        updateSliderLabels();
+        if (isPlaying && !isOriginalMode) {
+          // Restart with new settings for clean effect
+          const offset = getCurrentOffset();
+          stopPlayback(false);
+          startPlayback(offset);
+        }
+      });
+    });
+
+    function applyPreset(name) {
+      const p = presets[name];
+      if (!p) return;
+      speedSlider.value = p.speed;
+      depthSlider.value = p.depth;
+      reverbSlider.value = p.reverb;
+      bassSlider.value = p.bass;
+    }
+
+    // ========== Sliders ==========
+    [speedSlider, depthSlider, reverbSlider, bassSlider].forEach(slider => {
+      slider.addEventListener('input', () => {
+        updateSliderLabels();
+        // Update live parameters if playing
+        if (isPlaying && !isOriginalMode) {
+          updateLiveParams();
+        }
+        // Deselect preset when manually changing
+        document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+      });
+    });
+
+    function updateSliderLabels() {
+      speedVal.textContent = parseFloat(speedSlider.value).toFixed(2) + ' Hz';
+      depthVal.textContent = Math.round(parseFloat(depthSlider.value) * 100) + '%';
+      reverbVal.textContent = Math.round(parseFloat(reverbSlider.value) * 100) + '%';
+      bassVal.textContent = '+' + bassSlider.value + ' dB';
+    }
+
+    function updateLiveParams() {
+      if (!pannerNode || !wetGain || !bassFilter) return;
+      const depth = parseFloat(depthSlider.value);
+      const reverb = parseFloat(reverbSlider.value);
+      const bass = parseFloat(bassSlider.value);
+
+      // Bass
+      bassFilter.gain.value = bass;
+
+      // Reverb mix
+      wetGain.gain.value = reverb;
+      dryGain.gain.value = 1 - reverb * 0.4;
+    }
+
+    // ========== Playback ==========
+    playBtn.addEventListener('click', () => {
+      if (!originalBuffer) return;
+      ensureAudioContext();
+
+      if (isPlaying) {
+        stopPlayback();
+      } else {
+        startPlayback(pauseOffset);
+      }
+    });
+
+    abBtn.addEventListener('click', () => {
+      if (!originalBuffer || !isPlaying) return;
+      isOriginalMode = !isOriginalMode;
+      abBtn.textContent = isOriginalMode ? 'A/B → 8D' : 'A/B Original';
+      abBtn.style.borderColor = isOriginalMode ? 'var(--accent-2)' : '';
+      abBtn.style.color = isOriginalMode ? 'var(--accent-2)' : '';
+
+      const offset = getCurrentOffset();
+      stopPlayback(false);
+      startPlayback(offset);
+    });
+
+    function getCurrentOffset() {
+      if (!isPlaying || !audioContext) return pauseOffset;
+      return (audioContext.currentTime - startTime + pauseOffset) % fileDuration;
+    }
+
+    function startPlayback(offset = 0) {
+      if (!originalBuffer) return;
+      const ctx = ensureAudioContext();
+
+      // Clean previous nodes
+      if (sourceNode) {
+        try { sourceNode.stop(); } catch (_) {}
+        sourceNode.disconnect();
+      }
+
+      sourceNode = ctx.createBufferSource();
+      sourceNode.buffer = originalBuffer;
+
+      if (isOriginalMode) {
+        // Direct to destination
+        sourceNode.connect(ctx.destination);
+      } else {
+        // Build effect chain
+        buildEffectChain(ctx, sourceNode);
+      }
+
+      sourceNode.onended = () => {
+        if (isPlaying) {
+          isPlaying = false;
+          pauseOffset = 0;
+          updatePlayUI(false);
+          cancelAnimationFrame(animFrame);
+          progressFill.style.width = '0%';
+          timeDisplay.textContent = '0:00 / ' + formatDuration(fileDuration);
+        }
+      };
+
+      sourceNode.start(0, offset);
+      startTime = ctx.currentTime;
+      pauseOffset = offset;
+      isPlaying = true;
+      updatePlayUI(true);
+      animate();
+    }
+
+    function buildEffectChain(ctx, source) {
+      // Bass boost (low shelf)
+      bassFilter = ctx.createBiquadFilter();
+      bassFilter.type = 'lowshelf';
+      bassFilter.frequency.value = 120;
+      bassFilter.gain.value = parseFloat(bassSlider.value);
+
+      // Stereo panner for 8D movement
+      pannerNode = ctx.createStereoPanner();
+      pannerNode.pan.value = 0;
+
+      // Simple dual-delay reverb
+      dryGain = ctx.createGain();
+      wetGain = ctx.createGain();
+      const reverbAmount = parseFloat(reverbSlider.value);
+      dryGain.gain.value = 1 - reverbAmount * 0.4;
+      wetGain.gain.value = reverbAmount;
+
+      delay1 = ctx.createDelay(1.0);
+      delay1.delayTime.value = 0.18;
+      delay2 = ctx.createDelay(1.0);
+      delay2.delayTime.value = 0.29;
+
+      feedback1 = ctx.createGain();
+      feedback1.gain.value = 0.35;
+      feedback2 = ctx.createGain();
+      feedback2.gain.value = 0.28;
+
+      const filter = ctx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.value = 4500;
+
+      // Connections
+      source.connect(bassFilter);
+      bassFilter.connect(pannerNode);
+
+      // Dry path
+      pannerNode.connect(dryGain);
+      dryGain.connect(ctx.destination);
+
+      // Wet (reverb) path
+      pannerNode.connect(delay1);
+      delay1.connect(feedback1);
+      feedback1.connect(delay1);
+      delay1.connect(filter);
+
+      pannerNode.connect(delay2);
+      delay2.connect(feedback2);
+      feedback2.connect(delay2);
+      delay2.connect(filter);
+
+      filter.connect(wetGain);
+      wetGain.connect(ctx.destination);
+    }
+
+    function stopPlayback(resetOffset = true) {
+      if (sourceNode) {
+        try { sourceNode.stop(); } catch (_) {}
+        sourceNode.disconnect();
+        sourceNode = null;
+      }
+      if (isPlaying && audioContext) {
+        pauseOffset = resetOffset ? 0 : getCurrentOffset();
+      }
+      isPlaying = false;
+      updatePlayUI(false);
+      cancelAnimationFrame(animFrame);
+      if (resetOffset) {
+        progressFill.style.width = '0%';
+        timeDisplay.textContent = '0:00 / ' + formatDuration(fileDuration);
+        panDot.style.left = '50%';
+        panText.textContent = 'Center';
+      }
+    }
+
+    function updatePlayUI(playing) {
+      playIcon.textContent = playing ? '⏸' : '▶';
+      playText.textContent = playing ? 'Pause' : 'Play Preview';
+    }
+
+    // ========== Animation (pan + progress) ==========
+    function animate() {
+      if (!isPlaying || !audioContext) return;
+
+      const elapsed = audioContext.currentTime - startTime + pauseOffset;
+      const progress = Math.min(elapsed / fileDuration, 1);
+
+      progressFill.style.width = (progress * 100) + '%';
+      timeDisplay.textContent = formatDuration(elapsed) + ' / ' + formatDuration(fileDuration);
+
+      if (!isOriginalMode && pannerNode) {
+        const speed = parseFloat(speedSlider.value); // Hz
+        const depth = parseFloat(depthSlider.value);
+        // Circular panning: sin wave
+        const pan = Math.sin(2 * Math.PI * speed * elapsed) * depth;
+        pannerNode.pan.value = Math.max(-1, Math.min(1, pan));
+
+        // Visual
+        const leftPct = 50 + pan * 45;
+        panDot.style.left = leftPct + '%';
+        if (pan < -0.3) panText.textContent = 'Left';
+        else if (pan > 0.3) panText.textContent = 'Right';
+        else panText.textContent = 'Center';
+      } else {
+        panDot.style.left = '50%';
+        panText.textContent = isOriginalMode ? 'Original' : 'Center';
+      }
+
+      if (progress < 1) {
+        animFrame = requestAnimationFrame(animate);
+      }
+    }
+
+    // Progress bar seek
+    progressBar.addEventListener('click', (e) => {
+      if (!originalBuffer || !fileDuration) return;
+      const rect = progressBar.getBoundingClientRect();
+      const ratio = (e.clientX - rect.left) / rect.width;
+      const newOffset = ratio * fileDuration;
+      stopPlayback(false);
+      pauseOffset = newOffset;
+      startPlayback(newOffset);
+    });
+
+    // ========== Download (Offline render) ==========
+    downloadBtn.addEventListener('click', async () => {
+      if (!originalBuffer) return;
+      showOverlay('Rendering 8D audio… this may take a few seconds');
+
+      try {
+        const rendered = await renderOffline();
+        const wavBlob = audioBufferToWav(rendered);
+        const url = URL.createObjectURL(wavBlob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = (fileName.textContent.replace(/\.[^/.]+$/, '') || 'audio') + '_8D.wav';
+        a.click();
+        URL.revokeObjectURL(url);
+      } catch (err) {
+        console.error(err);
+        alert('Rendering failed. Try a shorter file or different format.');
+      } finally {
+        hideOverlay();
+      }
+    });
+
+    async function renderOffline() {
+      const sampleRate = originalBuffer.sampleRate;
+      const length = originalBuffer.length;
+      const offline = new OfflineAudioContext(2, length, sampleRate);
+
+      const source = offline.createBufferSource();
+      source.buffer = originalBuffer;
+
+      // Same chain as realtime
+      const bass = offline.createBiquadFilter();
+      bass.type = 'lowshelf';
+      bass.frequency.value = 120;
+      bass.gain.value = parseFloat(bassSlider.value);
+
+      const panner = offline.createStereoPanner();
+
+      const dry = offline.createGain();
+      const wet = offline.createGain();
+      const reverbAmount = parseFloat(reverbSlider.value);
+      dry.gain.value = 1 - reverbAmount * 0.4;
+      wet.gain.value = reverbAmount;
+
+      const d1 = offline.createDelay(1.0);
+      d1.delayTime.value = 0.18;
+      const d2 = offline.createDelay(1.0);
+      d2.delayTime.value = 0.29;
+
+      const fb1 = offline.createGain();
+      fb1.gain.value = 0.35;
+      const fb2 = offline.createGain();
+      fb2.gain.value = 0.28;
+
+      const lp = offline.createBiquadFilter();
+      lp.type = 'lowpass';
+      lp.frequency.value = 4500;
+
+      source.connect(bass);
+      bass.connect(panner);
+      panner.connect(dry);
+      dry.connect(offline.destination);
+
+      panner.connect(d1);
+      d1.connect(fb1);
+      fb1.connect(d1);
+      d1.connect(lp);
+
+      panner.connect(d2);
+      d2.connect(fb2);
+      fb2.connect(d2);
+      d2.connect(lp);
+
+      lp.connect(wet);
+      wet.connect(offline.destination);
+
+      // Automate pan over the entire duration
+      const speed = parseFloat(speedSlider.value);
+      const depth = parseFloat(depthSlider.value);
+      const duration = originalBuffer.duration;
+      const steps = Math.ceil(duration * 30); // 30 updates per second
+
+      for (let i = 0; i <= steps; i++) {
+        const t = (i / steps) * duration;
+        const pan = Math.sin(2 * Math.PI * speed * t) * depth;
+        panner.pan.setValueAtTime(Math.max(-1, Math.min(1, pan)), t);
+      }
+
+      source.start(0);
+      return await offline.startRendering();
+    }
+
+    // ========== WAV encoder ==========
+    function audioBufferToWav(buffer) {
+      const numChannels = buffer.numberOfChannels;
+      const sampleRate = buffer.sampleRate;
+      const format = 1; // PCM
+      const bitDepth = 16;
+
+      const bytesPerSample = bitDepth / 8;
+      const blockAlign = numChannels * bytesPerSample;
+
+      const dataLength = buffer.length * blockAlign;
+      const bufferLength = 44 + dataLength;
+      const arrayBuffer = new ArrayBuffer(bufferLength);
+      const view = new DataView(arrayBuffer);
+
+      // RIFF header
+      writeString(view, 0, 'RIFF');
+      view.setUint32(4, 36 + dataLength, true);
+      writeString(view, 8, 'WAVE');
+      writeString(view, 12, 'fmt ');
+      view.setUint32(16, 16, true);
+      view.setUint16(20, format, true);
+      view.setUint16(22, numChannels, true);
+      view.setUint32(24, sampleRate, true);
+      view.setUint32(28, sampleRate * blockAlign, true);
+      view.setUint16(32, blockAlign, true);
+      view.setUint16(34, bitDepth, true);
+      writeString(view, 36, 'data');
+      view.setUint32(40, dataLength, true);
+
+      // Interleave samples
+      const channels = [];
+      for (let c = 0; c < numChannels; c++) {
+        channels.push(buffer.getChannelData(c));
+      }
+
+      let offset = 44;
+      for (let i = 0; i < buffer.length; i++) {
+        for (let c = 0; c < numChannels; c++) {
+          let sample = Math.max(-1, Math.min(1, channels[c][i]));
+          sample = sample < 0 ? sample * 0x8000 : sample * 0x7FFF;
+          view.setInt16(offset, sample, true);
+          offset += 2;
+        }
+      }
+
+      return new Blob([arrayBuffer], { type: 'audio/wav' });
+    }
+
+    function writeString(view, offset, string) {
+      for (let i = 0; i < string.length; i++) {
+        view.setUint8(offset + i, string.charCodeAt(i));
+      }
+    }
+
+    // ========== Helpers ==========
+    function formatDuration(sec) {
+      if (!isFinite(sec) || sec < 0) return '0:00';
+      const m = Math.floor(sec / 60);
+      const s = Math.floor(sec % 60);
+      return m + ':' + (s < 10 ? '0' : '') + s;
+    }
+
+    function formatSize(bytes) {
+      if (bytes < 1024) return bytes + ' B';
+      if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+      return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    }
+
+    function showOverlay(text) {
+      overlayText.textContent = text || 'Processing…';
+      overlay.classList.add('visible');
+    }
+
+    function hideOverlay() {
+      overlay.classList.remove('visible');
+    }
+
+    // Initial labels
+    updateSliderLabels();
+  </script>
+</body>
+</html>
